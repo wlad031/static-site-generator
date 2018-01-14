@@ -1,0 +1,38 @@
+<div>
+
+    <h2 style="margin-bottom: 10px">Tags</h2>
+
+    {% for tag, articles in tags.items() %}
+        <a href="#{{ tag }}">
+            <span class="badge badge-secondary">
+                <i class="fa fa-tag" aria-hidden="true"></i>
+                {{ tag }} ({{ articles|length }})
+            </span>
+        </a>
+    {% endfor %}
+
+    <hr>
+
+    {% for tag, articles in tags.items() %}
+        <h3 id="{{ tag }}">
+            <span class="badge badge-secondary">
+                 <i class="fa fa-tag" aria-hidden="true"></i>
+                {{ tag }}
+            </span>
+        </h3>
+
+        <table class="table table-bordered">
+
+            {% for article in articles %}
+                <tr>
+                    <td><a href="{{ article.link }}">{{ article.title }}</a></td>
+                    <td style="width: 200px">
+                        <i class="fa fa-calendar" aria-hidden="true"></i>
+                        {{ article.date|datetimeformat('%d %B %Y') }}</td>
+                </tr>
+            {% endfor %}
+
+        </table>
+    {% endfor %}
+
+</div>

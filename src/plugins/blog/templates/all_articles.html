@@ -1,0 +1,63 @@
+<style>
+    h2 a:hover {
+        text-decoration: none
+    }
+</style>
+
+<div>
+
+    <h2 style="margin-bottom: 10px">Articles</h2>
+
+    {% for article in articles %}
+        <!-- Blog Post -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="card-title">
+                    <a href="{{ article.link }}" style="color: black">{{ article.title }}</a>
+                </h2>
+
+                <span style="font-size: 12px; color: gray">
+                    <i class="fa fa-calendar" aria-hidden="true"></i>
+                    Posted on {{ article.date|datetimeformat('%d %B %Y') }}<br>
+                </span>
+
+                <div style="margin-top: 10px">
+                    {% for tag in article.tags %}
+                        <a href="blog_tags.html#{{ tag }}">
+                            <span class="badge badge-secondary">
+                                <i class="fa fa-tag" aria-hidden="true"></i>
+                                {{ tag }}
+                            </span>
+                        </a>
+                    {% endfor %}
+                </div>
+                <hr>
+
+                <p class="card-text">{{ article.description }}</p>
+                <a href="{{ article.link }}" style="color: grey">continue...</a>
+
+            </div>
+        </div>
+    {% endfor %}
+
+    <!-- Pagination -->
+    <ul class="pagination justify-content-center mb-4">
+        {% for i in range(1, pagination.total_pages + 1) %}
+
+            <li class="page-item {% if i == pagination.current_page %}active{% endif %}">
+                <a class="page-link" style="
+                   {% if i == pagination.current_page %}
+                       background-color: #5f5f5f;
+                       border-color: #dfdfdf;
+                   {% else %}
+                        color: #afafaf;
+                   {% endif %}"
+                   href="{{ file_prefix }}{{ i|string }}.html">
+                    {{ i }}
+                </a>
+            </li>
+
+        {% endfor %}
+    </ul>
+
+</div>

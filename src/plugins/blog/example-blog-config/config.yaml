@@ -1,0 +1,64 @@
+---
+tags: ["tag 1", "tag 2", "tag 3"]
+articles_dir: ./articles
+articles_per_page: 3
+articles:
+  - md: 1.md
+    link: 8
+    date: 2018-02-13
+    title: Eighth article
+    tags: ["tag 1", "tag 2", "tag 3", "tag 4"]
+    description: |
+      ᕦ(ò_óˇ)ᕤ
+  - md: 1.md
+    link: 7
+    date: 2018-02-13
+    title: Seventh article
+    tags: ["tag 2", "tag 3"]
+    description: |
+      (~˘▾˘)~
+  - md: 1.md
+    link: 6
+    date: 2018-02-13
+    title: Sixth article
+    tags: ["tag 1", "tag 2", "tag 3"]
+    description: |
+      ♪~ ᕕ(ᐛ)ᕗ
+  - md: 1.md
+    link: 5
+    date: 2018-02-13
+    title: Fifth article
+    tags: ["tag 4"]
+    description: |
+      (☞ﾟヮﾟ)☞ ☜(ﾟヮﾟ☜)
+  - md: 1.md
+    link: 4
+    date: 2018-02-13
+    title: Fourth article
+    tags: ["tag 4"]
+    description: |
+      (づ￣ ³￣)づ
+  - md: 1.md
+    link: 3
+    date: 2018-02-13
+    title: Third article
+    tags: ["tag 2"]
+    description: |
+      ┬┴┬┴┤(･_├┬┴┬┴
+
+  - md: 1.md
+    link: 2
+    date: 2018-02-13
+    title: Second article
+    tags: ["tag 1", "tag 3"]
+    description: |
+      （╯°□°）╯︵( .o.)
+  - md: 1.md
+    link: 1
+    date: 2018-01-13
+    title: First article
+    tags: ["tag 1", "tag 2"]
+    description: |
+      ☜(⌒▽⌒)☞
+
+

@@ -1,0 +1,30 @@
+<div>
+
+    <h2 class="card-title">
+        {{ article.title }}
+    </h2>
+
+    <span style="font-size: 12px; color: gray">
+        <i class="fa fa-calendar" aria-hidden="true"></i>
+        Posted on {{ article.date|datetimeformat('%d %B %Y') }}<br>
+    </span>
+
+    <div style="margin-top: 10px">
+        {% for tag in article.tags %}
+            <a href="blog_tags.html#{{ tag }}">
+                <span class="badge badge-secondary">
+                    <i class="fa fa-tag" aria-hidden="true"></i>
+                    {{ tag }}
+                </span>
+            </a>
+        {% endfor %}
+    </div>
+
+    <hr>
+
+    <p class="card-text">{{ article.description }}</p>
+
+    <hr>
+
+    {{ article.text }}
+</div>
