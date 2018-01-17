@@ -2,6 +2,12 @@
 
     <h2 style="margin-bottom: 10px">Tags</h2>
 
+    {% if tags|length == 0 %}
+
+         <h4 style="margin-bottom: 10px">There is no tags yet :(</h4>
+
+    {% else %}
+
     {% for tag, articles in tags.items() %}
         <a href="#{{ tag }}">
             <span class="badge badge-secondary">
@@ -34,5 +40,7 @@
 
         </table>
     {% endfor %}
+
+    {% endif %}
 
 </div>
