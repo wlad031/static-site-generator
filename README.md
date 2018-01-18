@@ -35,8 +35,8 @@ pip3 install -r requirements.txt
  - Run application:
 
 ```
-python3 src/generate-static-site.py [plugins arguments...]
+python3 src/generate-static-site.py [--watch] --config /path/to/config/folder
 
 # For example:
-python3 src/generate-static-site.py --blog-config /plugins/blog/example-blog-config
+python3 src/generate-static-site.py --blog-config /path/to/examples
 ```

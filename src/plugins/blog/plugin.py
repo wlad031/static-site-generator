@@ -1,9 +1,9 @@
 import os
 from codecs import open
 
-from utils.logging import logging
-from utils.json import pretty_json
+from utils.logging import logger
 from utils.time import datetimeformat
+from utils.watch import watcher
 
 import yaml
 
@@ -39,18 +39,21 @@ class BlogPlugin(object):
     def __init__(self, config_dir):
         self.config_dir = config_dir
 
-        with open(os.path.join(config_dir, 'config_blog.yaml'), 'r', 'utf8') as cfg_f:
-            self.cfg = yaml.load(cfg_f)
+        watcher.add_watch(self.TEMPLATES_DIR)
 
-            logging.debug('Blog plugin configured')
+        with open(os.path.join(config_dir, 'config_blog.yaml'),
+                  'r', 'utf8') as cfg_f:
+            self.cfg = yaml.load(cfg_f)
 
             self.j2 = j.Environment(loader=j.FileSystemLoader(self.TEMPLATES_DIR),
                                     trim_blocks=True)
             self.j2.filters['datetimeformat'] = datetimeformat
 
+            logger.debug('Blog plugin configured')
+
     def generate(self):
-        logging.info('Blog plugin generation...')
-        return [
+        logger.info('Blog plugin pages generating...')
+        res = [
             {
                 'navbar': {'name': 'Articles', 'index': True},
                 'file': 'blog_page_1.html',
@@ -67,6 +70,8 @@ class BlogPlugin(object):
                 'pages': self.__generate_article_pages()
             }
         ]
+        logger.info('Blog plugin pages generated')
+        return res
 
     def __generate_main_pages(self):
         file_prefix = 'blog_page_'
@@ -100,6 +105,8 @@ class BlogPlugin(object):
                 )
             })
 
+        logger.info('Main pages generated')
+
         return res
 
     def __generate_all_tags_page(self):
@@ -119,7 +126,11 @@ class BlogPlugin(object):
                     'link': BlogPlugin.__gen_article_file_name(article),
                 })
 
-        return self.j2.get_template(template).render(tags=tags)
+        page = self.j2.get_template(template).render(tags=tags)
+
+        logger.info('All tags page generated')
+
+        return page
 
     def __generate_article_pages(self):
         template = 'article.html'
@@ -139,6 +150,8 @@ class BlogPlugin(object):
                         'text': self.markdowner.convert(md_f.read()).replace('\n', '')
                     })
                 })
+
+        logger.info('Articles pages generated')
 
         return res
 

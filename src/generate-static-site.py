@@ -1,13 +1,12 @@
 import os
-import time
 from codecs import open
 
 import config
 
-from utils.logging import logging
+from utils.logging import logger
 from utils.json import pretty_json
 from utils.file import copytree, rmtree, copyfile
-from utils.watch import watch
+from utils.watch import watcher
 
 import argparse
 import jinja2 as j
@@ -80,11 +79,25 @@ def main(config_dir):
 
 
 def main_watch(config_dir):
+
+    def fun():
+        main(config_dir)
+        logger.info('Changes watching...')
+    watcher.set_fun(lambda: fun())
+
+    watcher.add_watch(TEMPLATES_DIR)
+    watcher.add_watch(STATIC_DIR)
+    watcher.add_watch(config_dir)
+
+    init_plugins(config_dir)
     main(config_dir)
 
-    logging.info('Started watching...')
-    watch(config_dir, lambda: main(config_dir))
-    logging.info('Ended watching...')
+    logger.info('Changes watching starting...')
+    watcher.start()
+
+
+def init_plugins(config_dir):
+    return [p(config_dir=config_dir) for p in plugins]
 
 
 if __name__ == '__main__':
@@ -94,14 +107,16 @@ if __name__ == '__main__':
 
     args = vars(parser.parse_args())
 
-    logging.debug('Program arguments:')
-    logging.debug(pretty_json(**args))
+    logger.debug('Program arguments:')
+    logger.debug(pretty_json(**args))
 
-    if not os.path.exists(args['config']):
-        logging.error('Config directory does not exist')
+    config_dir = args['config']
+    if not os.path.exists(config_dir):
+        logger.error('Config directory does not exist')
         exit(1)
 
     if args['watch']:
-        main_watch(args['config'])
+        main_watch(config_dir)
     else:
-        main(args['config'])
+        init_plugins(config_dir)
+        main(config_dir)
