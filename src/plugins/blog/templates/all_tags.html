@@ -32,7 +32,7 @@
             {% for article in articles %}
                 <tr>
                     <td><a href="{{ article.link }}">{{ article.title }}</a></td>
-                    <td style="width: 200px">
+                    <td style="width: 200px; color: grey">
                         <i class="fa fa-calendar" aria-hidden="true"></i>
                         {{ article.date|datetimeformat('%d %B %Y') }}</td>
                 </tr>
