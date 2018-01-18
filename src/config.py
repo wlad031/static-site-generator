@@ -2,19 +2,10 @@ from plugins.blog import BlogPlugin
 from plugins.about import AboutPlugin
 
 OUTPUT_DIR = '../build'
-TEMPLATES_DIR = '../templates'
-STATIC_DIR = '../static'
+
 PLUGINS = [
-    {
-        'plugin': BlogPlugin,
-        'params': {
-            'args': ['--blog-config'],
-            'kwargs': {'type': str, 'required': True}
-        }
-    },
-    {
-        'plugin': AboutPlugin
-    }
+    BlogPlugin,
+    AboutPlugin
 ]
 
 TITLE = 'Site Title'

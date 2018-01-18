@@ -1,4 +1,5 @@
 import os
+from codecs import open
 
 from utils.logging import logging
 from utils.json import pretty_json
@@ -13,6 +14,9 @@ HTML = '.html'
 
 
 class BlogPlugin(object):
+
+    TEMPLATES_DIR = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), 'templates')
 
     markdowner = Markdown(extras=[
         'code-friendly',
@@ -32,19 +36,16 @@ class BlogPlugin(object):
         'wiki-tables',
     ])
 
-    def __init__(self, args):
-        self.blog_config = args['blog_config']
+    def __init__(self, config_dir):
+        self.config_dir = config_dir
 
-        with open(os.path.join(self.blog_config, 'config.yaml'), 'r') as cfg_f:
+        with open(os.path.join(config_dir, 'config_blog.yaml'), 'r', 'utf8') as cfg_f:
             self.cfg = yaml.load(cfg_f)
 
             logging.debug('Blog plugin config:')
             logging.debug(pretty_json(**self.cfg))
 
-            self.templates_dir = os.path.join(
-                os.path.dirname(os.path.realpath(__file__)), 'templates')
-
-            self.j2 = j.Environment(loader=j.FileSystemLoader(self.templates_dir),
+            self.j2 = j.Environment(loader=j.FileSystemLoader(self.TEMPLATES_DIR),
                                     trim_blocks=True)
             self.j2.filters['datetimeformat'] = datetimeformat
 
@@ -126,8 +127,8 @@ class BlogPlugin(object):
 
         for article in self.cfg['articles']:
             with open(os.path.join(
-                    self.blog_config, self.cfg['articles_dir'], article['md']),
-                    'r') as md_f:
+                    self.config_dir, self.cfg['articles_dir'], article['md']),
+                    'r', 'utf8') as md_f:
                 res.append({
                     'file': BlogPlugin.__gen_article_file_name(article),
                     'html': self.j2.get_template(template).render(article={

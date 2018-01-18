@@ -1,5 +1,5 @@
-import argparse
 import os
+from codecs import open
 
 import config
 
@@ -7,30 +7,25 @@ from utils.logging import logging
 from utils.json import pretty_json
 from utils.file import copytree, rmtree, copyfile
 
+import argparse
 import jinja2 as j
 
 plugins = config.PLUGINS
 
+CUR_DIR = os.path.dirname(os.path.realpath(__file__))
+BUILD_DIR = os.path.join(CUR_DIR, config.OUTPUT_DIR)
+STATIC_DIR = os.path.join(CUR_DIR, '../static')
+TEMPLATES_DIR = os.path.join(CUR_DIR, '../templates')
 
-def main(args):
-    logging.debug('Program arguments:')
-    logging.debug(pretty_json(**args))
 
-    cur_dir = os.path.dirname(os.path.realpath(__file__))
+def main(config_dir):
+    if not os.path.exists(STATIC_DIR):
+        os.makedirs(STATIC_DIR)
+    if os.path.exists(BUILD_DIR):
+        rmtree(BUILD_DIR)
+    copytree(STATIC_DIR, BUILD_DIR)
 
-    static_dir = os.path.join(cur_dir, config.STATIC_DIR)
-    if not os.path.exists(static_dir):
-        os.makedirs(static_dir)
-
-    out_dir = os.path.join(cur_dir, config.OUTPUT_DIR)
-    if os.path.exists(out_dir):
-        rmtree(out_dir)
-    copytree(static_dir, out_dir)
-    if not os.path.exists(out_dir):
-        os.makedirs(out_dir)
-
-    templates_dir = os.path.join(cur_dir, config.TEMPLATES_DIR)
-    j2 = j.Environment(loader=j.FileSystemLoader(templates_dir),
+    j2 = j.Environment(loader=j.FileSystemLoader(TEMPLATES_DIR),
                        trim_blocks=True)
 
     generated = []
@@ -38,7 +33,7 @@ def main(args):
     index = None
 
     for p in plugins:
-        plugin_obj = p['plugin'](args)
+        plugin_obj = p(config_dir=config_dir)
         pages = plugin_obj.generate()
 
         for page in pages:
@@ -56,15 +51,15 @@ def main(args):
     for g in generated:
         for page in g:
             if bool(page.get('multiple', False)):
-                for concrete_page in page['pages']:
-                    html = concrete_page['html']
+                for _p in page['pages']:
+                    html = _p['html']
                     html = j2.get_template('index.html').render(
                         title=config.TITLE,
                         footer_content=config.FOOTER_CONTENT,
                         content=html,
                         navs=navs
                     )
-                    with open(os.path.join(out_dir, concrete_page['file']), 'w') as f:
+                    with open(os.path.join(BUILD_DIR, _p['file']), 'w', 'utf8') as f:
                         f.write(html)
 
             else:
@@ -76,18 +71,23 @@ def main(args):
                     content=html,
                     navs=navs
                 )
-                with open(os.path.join(out_dir, file), 'w') as f:
+                with open(os.path.join(BUILD_DIR, file), 'w', 'utf8') as f:
                     f.write(html)
 
-    copyfile(os.path.join(out_dir, index), os.path.join(out_dir, 'index.html'))
+    copyfile(os.path.join(BUILD_DIR, index), os.path.join(BUILD_DIR, 'index.html'))
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Static Blog Generator')
+    parser.add_argument('--config', required=True, type=str)
 
-    for plugin in plugins:
-        arg = plugin.get('params', None)
-        if arg is not None:
-            parser.add_argument(*arg['args'], **arg['kwargs'])
+    args = vars(parser.parse_args())
 
-    main(vars(parser.parse_args()))
+    logging.debug('Program arguments:')
+    logging.debug(pretty_json(**args))
+
+    if not os.path.exists(args['config']):
+        logging.error('Config directory does not exist')
+        exit(1)
+
+    main(config_dir=args['config'])

@@ -1,7 +1,7 @@
 ---
 tags: ["tag 1", "tag 2", "tag 3"]
 articles_dir: ./articles
-articles_per_page: 3
+articles_per_page: 5
 articles:
   - md: 1.md
     link: 8
@@ -45,7 +45,6 @@ articles:
     tags: ["tag 2"]
     description: |
       ┬┴┬┴┤(･_├┬┴┬┴
-
   - md: 1.md
     link: 2
     date: 2018-02-13
@@ -60,5 +59,3 @@ articles:
     tags: ["tag 1", "tag 2"]
     description: |
       ☜(⌒▽⌒)☞
-
-
