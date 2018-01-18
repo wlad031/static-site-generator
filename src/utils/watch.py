@@ -32,10 +32,11 @@ class Watcher(object):
         self.fun = fun
 
     def add_watch(self, dir):
-        logging.info('Adding watcher for : %s', dir)
-        observer = Observer()
-        observer.schedule(MyHandler(self.fun), path=dir, recursive=True)
-        self.__observers.append(observer)
+        if self.fun is not None:
+            logging.info('Adding watcher for : %s', dir)
+            observer = Observer()
+            observer.schedule(MyHandler(self.fun), path=dir, recursive=True)
+            self.__observers.append(observer)
 
     def start(self):
         for observer in self.__observers:

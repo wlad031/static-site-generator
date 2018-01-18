@@ -15,7 +15,7 @@ You can write your own plugin using some of existing as example and use it in yo
 
 ### Configuration
 
-In `config.py` file you can register needed plugins and change the build directory or site header/footer text.
+In `config.yaml` file in configuration directory you can change the build directory or site header/footer text. Also you can register needed plugins in `generate-static-file.py`.
 
 ### Installation and running
  
@@ -38,5 +38,5 @@ pip3 install -r requirements.txt
 python3 src/generate-static-site.py [--watch] --config /path/to/config/folder
 
 # For example:
-python3 src/generate-static-site.py --blog-config /path/to/examples
+python3 src/generate-static-site.py --config /path/to/examples
 ```

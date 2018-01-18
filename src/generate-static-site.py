@@ -1,83 +1,99 @@
 import os
 from codecs import open
 
-import config
-
 from utils.logging import logger
 from utils.json import pretty_json
 from utils.file import copytree, rmtree, copyfile
 from utils.watch import watcher
 
+import yaml
 import argparse
 import jinja2 as j
 
-plugins = config.PLUGINS
+from plugins.blog import BlogPlugin
+from plugins.about import AboutPlugin
 
-CUR_DIR = os.path.dirname(os.path.realpath(__file__))
-BUILD_DIR = os.path.join(CUR_DIR, config.OUTPUT_DIR)
-STATIC_DIR = os.path.join(CUR_DIR, '../static')
-TEMPLATES_DIR = os.path.join(CUR_DIR, '../templates')
+PLUGINS = [
+    BlogPlugin,
+    AboutPlugin
+]
+
+CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
+STATIC_DIR = os.path.join(CURRENT_DIR, '../static')
+TEMPLATES_DIR = os.path.join(CURRENT_DIR, '../templates')
 
 
+# noinspection PyShadowingNames
 def main(config_dir):
-    if not os.path.exists(STATIC_DIR):
-        os.makedirs(STATIC_DIR)
-    if os.path.exists(BUILD_DIR):
-        rmtree(BUILD_DIR)
-    copytree(STATIC_DIR, BUILD_DIR)
+    with open(os.path.join(config_dir, 'config.yaml'),
+              'r', 'utf8') as cfg_f:
+        cfg = yaml.load(cfg_f)
 
-    j2 = j.Environment(loader=j.FileSystemLoader(TEMPLATES_DIR),
-                       trim_blocks=True)
+        build_dir = cfg['output_dir']
+        if not os.path.isabs(build_dir):
+            build_dir = os.path.join(config_dir, build_dir)
 
-    generated = []
-    navs = []
-    index = None
+        if not os.path.exists(STATIC_DIR):
+            os.makedirs(STATIC_DIR)
+        if os.path.exists(build_dir):
+            rmtree(build_dir)
+        copytree(STATIC_DIR, build_dir)
 
-    for p in plugins:
-        plugin_obj = p(config_dir=config_dir)
-        pages = plugin_obj.generate()
+        j2 = j.Environment(loader=j.FileSystemLoader(TEMPLATES_DIR),
+                           trim_blocks=True)
 
-        for page in pages:
-            navbar = page.get('navbar', None)
-            if navbar is not None:
-                navs.append({'name': navbar['name'], 'link': page['file']})
-                if navbar.get('index', False):
-                    index = page['file']
+        generated = []
+        navs = []
+        index = None
 
-        generated.append(pages)
+        for p in PLUGINS:
+            plugin_obj = p(config_dir=config_dir)
+            pages = plugin_obj.generate()
 
-    if index is None:
-        raise Exception('Please specify one index page')
+            for page in pages:
+                navbar = page.get('navbar', None)
+                if navbar is not None:
+                    navs.append({'name': navbar['name'], 'link': page['file']})
+                    if navbar.get('index', False):
+                        index = page['file']
 
-    for g in generated:
-        for page in g:
-            if bool(page.get('multiple', False)):
-                for _p in page['pages']:
-                    html = _p['html']
+            generated.append(pages)
+
+        if index is None:
+            raise Exception('Please specify one index page')
+
+        for g in generated:
+            for page in g:
+                if bool(page.get('multiple', False)):
+                    for _p in page['pages']:
+                        html = _p['html']
+                        html = j2.get_template('index.html').render(
+                            title=cfg['title'],
+                            footer_content=cfg['footer_content'],
+                            content=html,
+                            navs=navs
+                        )
+                        with open(os.path.join(build_dir, _p['file']),
+                                  'w', 'utf8') as f:
+                            f.write(html)
+
+                else:
+                    file = page['file']
+                    html = page['html']
                     html = j2.get_template('index.html').render(
-                        title=config.TITLE,
-                        footer_content=config.FOOTER_CONTENT,
+                        title=cfg['title'],
+                        footer_content=cfg['footer_content'],
                         content=html,
                         navs=navs
                     )
-                    with open(os.path.join(BUILD_DIR, _p['file']), 'w', 'utf8') as f:
+                    with open(os.path.join(build_dir, file), 'w', 'utf8') as f:
                         f.write(html)
 
-            else:
-                file = page['file']
-                html = page['html']
-                html = j2.get_template('index.html').render(
-                    title=config.TITLE,
-                    footer_content=config.FOOTER_CONTENT,
-                    content=html,
-                    navs=navs
-                )
-                with open(os.path.join(BUILD_DIR, file), 'w', 'utf8') as f:
-                    f.write(html)
-
-    copyfile(os.path.join(BUILD_DIR, index), os.path.join(BUILD_DIR, 'index.html'))
+        copyfile(os.path.join(build_dir, index),
+                 os.path.join(build_dir, 'index.html'))
 
 
+# noinspection PyShadowingNames
 def main_watch(config_dir):
 
     def fun():
@@ -96,8 +112,9 @@ def main_watch(config_dir):
     watcher.start()
 
 
+# noinspection PyShadowingNames
 def init_plugins(config_dir):
-    return [p(config_dir=config_dir) for p in plugins]
+    return [p(config_dir=config_dir) for p in PLUGINS]
 
 
 if __name__ == '__main__':
