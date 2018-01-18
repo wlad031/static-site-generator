@@ -4,7 +4,6 @@ from codecs import open
 import yaml
 
 from utils.logging import logging
-from utils.json import pretty_json
 
 import jinja2 as j
 
@@ -18,13 +17,13 @@ class AboutPlugin(object):
                   'r', 'utf8') as cfg_f:
             self.cfg = yaml.load(cfg_f)
 
-            logging.debug('About plugin config:')
-            logging.debug(pretty_json(**self.cfg))
+            logging.info('About plugin configured')
 
             self.j2 = j.Environment(loader=j.FileSystemLoader(self.TEMPLATES_DIR),
                                     trim_blocks=True)
 
     def generate(self):
+        logging.info('About plugin generation...')
         return [
             {
                 'navbar': {'name': 'About me'},

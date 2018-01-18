@@ -42,14 +42,14 @@ class BlogPlugin(object):
         with open(os.path.join(config_dir, 'config_blog.yaml'), 'r', 'utf8') as cfg_f:
             self.cfg = yaml.load(cfg_f)
 
-            logging.debug('Blog plugin config:')
-            logging.debug(pretty_json(**self.cfg))
+            logging.debug('Blog plugin configured')
 
             self.j2 = j.Environment(loader=j.FileSystemLoader(self.TEMPLATES_DIR),
                                     trim_blocks=True)
             self.j2.filters['datetimeformat'] = datetimeformat
 
     def generate(self):
+        logging.info('Blog plugin generation...')
         return [
             {
                 'navbar': {'name': 'Articles', 'index': True},
@@ -145,7 +145,7 @@ class BlogPlugin(object):
     @staticmethod
     def __gen_article_file_name(article):
         prefix = 'blog_article_'
-        return prefix + str(article['link']) + '.html'
+        return prefix + str(article['link']) + HTML
 
     @staticmethod
     def __paginate_articles(articles, per_page=10):

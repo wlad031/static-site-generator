@@ -1,4 +1,5 @@
 import os
+import time
 from codecs import open
 
 import config
@@ -6,6 +7,7 @@ import config
 from utils.logging import logging
 from utils.json import pretty_json
 from utils.file import copytree, rmtree, copyfile
+from utils.watch import watch
 
 import argparse
 import jinja2 as j
@@ -77,9 +79,18 @@ def main(config_dir):
     copyfile(os.path.join(BUILD_DIR, index), os.path.join(BUILD_DIR, 'index.html'))
 
 
+def main_watch(config_dir):
+    main(config_dir)
+
+    logging.info('Started watching...')
+    watch(config_dir, lambda: main(config_dir))
+    logging.info('Ended watching...')
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Static Blog Generator')
     parser.add_argument('--config', required=True, type=str)
+    parser.add_argument('--watch', required=False, action='store_true')
 
     args = vars(parser.parse_args())
 
@@ -90,4 +101,7 @@ if __name__ == '__main__':
         logging.error('Config directory does not exist')
         exit(1)
 
-    main(config_dir=args['config'])
+    if args['watch']:
+        main_watch(args['config'])
+    else:
+        main(args['config'])
