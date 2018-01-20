@@ -4,6 +4,7 @@ articles_dir: ./articles
 articles_per_page: 5
 articles:
   - md: 1.md
+    draft: true
     link: 8
     date: 2018-02-13
     title: Eighth article

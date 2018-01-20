@@ -10,7 +10,7 @@
 
     {% if articles|length == 0 %}
 
-         <h4 style="margin-bottom: 10px">There is no articles yet :(</h4>
+        <h4 style="margin-bottom: 10px">There is no articles yet :(</h4>
 
     {% else %}
 
@@ -18,29 +18,38 @@
             <!-- Blog Post -->
             <div class="card mb-4">
                 <div class="card-body">
+
                     <h2 class="card-title">
-                        <a href="{{ article.link }}" style="color: black">{{ article.title }}</a>
+                        {% if article.draft %}
+                            {{ article.title }}
+                        {% else %}
+                            <a href="{{ article.link }}" style="color: black">{{ article.title }}</a>
+                        {% endif %}
                     </h2>
 
-                    <span style="font-size: 12px; color: gray">
-                    <i class="fa fa-calendar" aria-hidden="true"></i>
-                    Posted on {{ article.date|datetimeformat('%d %B %Y') }}<br>
-                </span>
+                    {% if article.draft %}
+                        <span style="color: grey">Coming soon...</span>
+                    {% else %}
+                        <span style="font-size: 12px; color: gray">
+                            <i class="fa fa-calendar" aria-hidden="true"></i>
+                            Posted on {{ article.date|datetimeformat('%d %B %Y') }}<br>
+                        </span>
 
-                    <div style="margin-top: 10px">
-                        {% for tag in article.tags %}
-                            <a href="blog_tags.html#{{ tag }}">
-                            <span class="badge badge-secondary">
-                                <i class="fa fa-tag" aria-hidden="true"></i>
-                                {{ tag }}
-                            </span>
-                            </a>
-                        {% endfor %}
-                    </div>
-                    <hr>
+                        <div style="margin-top: 10px">
+                            {% for tag in article.tags %}
+                                <a href="blog_tags.html#{{ tag }}">
+                                <span class="badge badge-secondary">
+                                    <i class="fa fa-tag" aria-hidden="true"></i>
+                                    {{ tag }}
+                                </span>
+                                </a>
+                            {% endfor %}
+                        </div>
+                        <hr>
 
-                    <p class="card-text">{{ article.description }}</p>
-                    <a href="{{ article.link }}" style="color: grey">continue...</a>
+                        <p class="card-text">{{ article.description }}</p>
+                        <a href="{{ article.link }}" style="color: grey">continue...</a>
+                    {% endif %}
 
                 </div>
             </div>

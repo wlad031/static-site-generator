@@ -14,7 +14,6 @@ HTML = '.html'
 
 
 class BlogPlugin(object):
-
     TEMPLATES_DIR = os.path.join(
         os.path.dirname(os.path.realpath(__file__)), 'templates')
 
@@ -88,7 +87,8 @@ class BlogPlugin(object):
                 'date': a['date'],
                 'tags': a['tags'],
                 'description': a['description'],
-                'link': BlogPlugin.__gen_article_file_name(a),
+                'draft': bool(a.get('draft', False)),
+                'link': BlogPlugin.__gen_article_file_name(a)
             } for a in page]
 
             pagination = {
@@ -123,6 +123,7 @@ class BlogPlugin(object):
                 tags[article_tag].append({
                     'title': article['title'],
                     'date': article['date'],
+                    'draft': bool(article.get('draft', False)),
                     'link': BlogPlugin.__gen_article_file_name(article),
                 })
 
@@ -137,19 +138,21 @@ class BlogPlugin(object):
         res = []
 
         for article in self.cfg['articles']:
-            with open(os.path.join(
-                    self.config_dir, self.cfg['articles_dir'], article['md']),
-                    'r', 'utf8') as md_f:
-                res.append({
-                    'file': BlogPlugin.__gen_article_file_name(article),
-                    'html': self.j2.get_template(template).render(article={
-                        'title': article['title'],
-                        'date': article['date'],
-                        'description': article['description'],
-                        'tags': article['tags'],
-                        'text': self.markdowner.convert(md_f.read()).replace('\n', '')
+            if not bool(article.get('draft', False)):
+                with open(os.path.join(
+                        self.config_dir, self.cfg['articles_dir'], article['md']),
+                        'r', 'utf8') as md_f:
+                    res.append({
+                        'file': BlogPlugin.__gen_article_file_name(article),
+                        'html': self.j2.get_template(template).render(article={
+                            'title': article['title'],
+                            'date': article['date'],
+                            'description': article['description'],
+                            'tags': article['tags'],
+                            'text': self.markdowner.convert(md_f.read())
+                                .replace('\n', '')
+                        })
                     })
-                })
 
         logger.info('Articles pages generated')
 
