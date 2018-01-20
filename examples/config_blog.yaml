@@ -3,14 +3,8 @@ tags: ["tag 1", "tag 2", "tag 3"]
 articles_dir: ./articles
 articles_per_page: 5
 articles:
-  - md: 1.md
-    draft: true
-    link: 8
-    date: 2018-02-13
+  - draft: true
     title: Eighth article
-    tags: ["tag 1", "tag 2", "tag 3", "tag 4"]
-    description: |
-      ᕦ(ò_óˇ)ᕤ
   - md: 1.md
     link: 7
     date: 2018-02-13

@@ -83,13 +83,13 @@ class BlogPlugin(object):
             cur_page = i + 1
 
             articles = [{
-                'title': a['title'],
-                'date': a['date'],
-                'tags': a['tags'],
-                'description': a['description'],
-                'draft': bool(a.get('draft', False)),
-                'link': BlogPlugin.__gen_article_file_name(a)
-            } for a in page]
+                'title': article['title'],
+                'date': article.get('date', None),
+                'tags': article.get('tags', None),
+                'description': article.get('description', None),
+                'draft': bool(article.get('draft', False)),
+                'link': BlogPlugin.__gen_article_file_name(article)
+            } for article in page]
 
             pagination = {
                 'total_pages': len(paginated_articles),
@@ -116,13 +116,13 @@ class BlogPlugin(object):
         for tag in self.cfg['tags']:
             tags[tag] = []
         for article in self.cfg['articles']:
-            article_tags = article['tags']
+            article_tags = article.get('tags', [])
             for article_tag in article_tags:
                 if article_tag not in self.cfg['tags']:
                     tags[article_tag] = []
                 tags[article_tag].append({
                     'title': article['title'],
-                    'date': article['date'],
+                    'date': article.get('date', None),
                     'draft': bool(article.get('draft', False)),
                     'link': BlogPlugin.__gen_article_file_name(article),
                 })
@@ -146,9 +146,9 @@ class BlogPlugin(object):
                         'file': BlogPlugin.__gen_article_file_name(article),
                         'html': self.j2.get_template(template).render(article={
                             'title': article['title'],
-                            'date': article['date'],
-                            'description': article['description'],
-                            'tags': article['tags'],
+                            'date': article.get('date', None),
+                            'description': article.get('description', None),
+                            'tags': article.get('tags', None),
                             'text': self.markdowner.convert(md_f.read())
                                 .replace('\n', '')
                         })
@@ -160,21 +160,19 @@ class BlogPlugin(object):
 
     @staticmethod
     def __gen_article_file_name(article):
+        if bool(article.get('draft', False)):
+            return None
         prefix = 'blog_article_'
         return prefix + str(article['link']) + HTML
 
     @staticmethod
     def __paginate_articles(articles, per_page=10):
-        res = [[]]
-
-        k, n = 0, 0
+        res, k, n = [[]], 0, 0
         for article in articles:
             if k < per_page:
                 res[n].append(article)
                 k += 1
             else:
-                n += 1
                 res.append([article])
-                k = 0
-
+                k, n = 0, n + 1
         return res
