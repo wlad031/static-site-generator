@@ -5,6 +5,7 @@ from utils.logging import logger
 from utils.json import pretty_json
 from utils.file import copytree, rmtree, copyfile
 from utils.watch import watcher
+from utils.hash import md5
 
 import yaml
 import argparse
@@ -19,8 +20,27 @@ PLUGINS = [
 ]
 
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
-STATIC_DIR = os.path.join(CURRENT_DIR, '../static')
 TEMPLATES_DIR = os.path.join(CURRENT_DIR, '../templates')
+
+
+def write_page(build_dir, file, hash, html):
+    path = os.path.join(build_dir, file)
+    if os.path.exists(path):
+        logger.info('File is already exists : %s', file)
+        should_write = False
+        with open(path, 'r', 'utf8') as f:
+            if md5(f.read()) != hash:
+                logger.info('Checksum is not matching, file will be overwritten')
+                should_write = True
+            else:
+                logger.info('Checksum is matching')
+        if should_write:
+            with open(path, 'w', 'utf8') as f:
+                f.write(html)
+    else:
+        logger.info('New file will be created : %s', file)
+        with open(path, 'w', 'utf8') as f:
+            f.write(html)
 
 
 # noinspection PyShadowingNames
@@ -32,12 +52,8 @@ def main(config_dir):
         build_dir = cfg['output_dir']
         if not os.path.isabs(build_dir):
             build_dir = os.path.join(config_dir, build_dir)
-
-        if not os.path.exists(STATIC_DIR):
-            os.makedirs(STATIC_DIR)
-        if os.path.exists(build_dir):
-            rmtree(build_dir)
-        copytree(STATIC_DIR, build_dir)
+        if not os.path.exists(build_dir):
+            os.makedirs(build_dir)
 
         j2 = j.Environment(loader=j.FileSystemLoader(TEMPLATES_DIR),
                            trim_blocks=True)
@@ -62,32 +78,24 @@ def main(config_dir):
         if index is None:
             raise Exception('Please specify one index page')
 
+        def generate_final_page(content):
+            return j2.get_template('index.html').render(
+                title=cfg['title'],
+                footer_content=cfg['footer_content'],
+                content=content,
+                navs=navs
+            )
+
         for g in generated:
             for page in g:
                 if bool(page.get('multiple', False)):
                     for _p in page['pages']:
-                        html = _p['html']
-                        html = j2.get_template('index.html').render(
-                            title=cfg['title'],
-                            footer_content=cfg['footer_content'],
-                            content=html,
-                            navs=navs
-                        )
-                        with open(os.path.join(build_dir, _p['file']),
-                                  'w', 'utf8') as f:
-                            f.write(html)
+                        html = generate_final_page(_p['html'])
+                        write_page(build_dir, _p['file'], md5(html), html)
 
                 else:
-                    file = page['file']
-                    html = page['html']
-                    html = j2.get_template('index.html').render(
-                        title=cfg['title'],
-                        footer_content=cfg['footer_content'],
-                        content=html,
-                        navs=navs
-                    )
-                    with open(os.path.join(build_dir, file), 'w', 'utf8') as f:
-                        f.write(html)
+                    html = generate_final_page(page['html'])
+                    write_page(build_dir, page['file'], md5(html), html)
 
         copyfile(os.path.join(build_dir, index),
                  os.path.join(build_dir, 'index.html'))
@@ -98,17 +106,16 @@ def main_watch(config_dir):
 
     def fun():
         main(config_dir)
-        logger.info('Changes watching...')
+        logger.info('Watching for changes...')
     watcher.set_fun(lambda: fun())
 
     watcher.add_watch(TEMPLATES_DIR)
-    watcher.add_watch(STATIC_DIR)
     watcher.add_watch(config_dir)
 
     init_plugins(config_dir)
     main(config_dir)
 
-    logger.info('Changes watching starting...')
+    logger.info('Watching for changes starting...')
     watcher.start()
 
 
