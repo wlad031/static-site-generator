@@ -2,53 +2,38 @@ import os
 from codecs import open
 
 from utils.logging import logger
-from utils.time import datetimeformat
-from utils.watch import watcher
+from plugins.plugin import Plugin
 
-import yaml
-
-import jinja2 as j
 from markdown2 import Markdown
+from CommonMark import commonmark as parse_md
 
 HTML = '.html'
 
 
-class BlogPlugin(object):
+class BlogPlugin(Plugin):
     TEMPLATES_DIR = os.path.join(
         os.path.dirname(os.path.realpath(__file__)), 'templates')
 
     markdowner = Markdown(extras=[
-        'code-friendly',
-        'code-color',
-        'cuddled-lists',
+        # 'code-friendly',
+        # # 'code-color',
+        # 'cuddled-lists',
         'fenced-code-blocks',
-        'footnotes',
-        'header-ids',
-        # 'link-patterns',
-        'markdown-in-html',
-        'metadata',
-        'nofollow',
-        'numbering',
-        'pyshell',
-        'tables',
-        'use-file-vars',
-        'wiki-tables',
+        # 'footnotes',
+        # 'header-ids',
+        # # 'link-patterns',
+        # 'markdown-in-html',
+        # 'metadata',
+        # 'nofollow',
+        # 'numbering',
+        # 'pyshell',
+        # 'tables',
+        # 'use-file-vars',
+        # 'wiki-tables',
     ])
 
     def __init__(self, config_dir):
-        self.config_dir = config_dir
-
-        watcher.add_watch(self.TEMPLATES_DIR)
-
-        with open(os.path.join(config_dir, 'config_blog.yaml'),
-                  'r', 'utf8') as cfg_f:
-            self.cfg = yaml.load(cfg_f)
-
-            self.j2 = j.Environment(loader=j.FileSystemLoader(self.TEMPLATES_DIR),
-                                    trim_blocks=True)
-            self.j2.filters['datetimeformat'] = datetimeformat
-
-            logger.debug('Blog plugin configured')
+        super().__init__('Blog', config_dir, self.TEMPLATES_DIR, 'config_blog.yaml')
 
     def generate(self):
         logger.info('Blog plugin pages generating...')
@@ -142,6 +127,7 @@ class BlogPlugin(object):
                 with open(os.path.join(
                         self.config_dir, self.cfg['articles_dir'], article['md']),
                         'r', 'utf8') as md_f:
+                    md_f_read = md_f.read()
                     res.append({
                         'file': BlogPlugin.__gen_article_file_name(article),
                         'html': self.j2.get_template(template).render(article={
@@ -149,8 +135,7 @@ class BlogPlugin(object):
                             'date': article.get('date', None),
                             'description': article.get('description', None),
                             'tags': article.get('tags', None),
-                            'text': self.markdowner.convert(md_f.read())
-                                .replace('\n', '')
+                            'text': parse_md(md_f_read)#self.markdowner.convert(md_f_read)
                         })
                     })
 

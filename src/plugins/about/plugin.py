@@ -1,31 +1,15 @@
 import os
-from codecs import open
-
-import yaml
 
 from utils.logging import logger
-from utils.watch import watcher
-
-import jinja2 as j
+from plugins.plugin import Plugin
 
 
-class AboutPlugin(object):
+class AboutPlugin(Plugin):
     TEMPLATES_DIR = os.path.join(
         os.path.dirname(os.path.realpath(__file__)), 'templates')
 
     def __init__(self, config_dir):
-        self.config_dir = config_dir
-
-        watcher.add_watch(self.TEMPLATES_DIR)
-
-        with open(os.path.join(config_dir, 'config_about.yaml'),
-                  'r', 'utf8') as cfg_f:
-            self.cfg = yaml.load(cfg_f)
-
-            self.j2 = j.Environment(loader=j.FileSystemLoader(self.TEMPLATES_DIR),
-                                    trim_blocks=True)
-
-            logger.info('About plugin configured')
+        super().__init__('About', config_dir, self.TEMPLATES_DIR, 'config_about.yaml')
 
     def generate(self):
         logger.info('About plugin generating')

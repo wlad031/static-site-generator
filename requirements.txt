@@ -1,3 +1,4 @@
+CommonMark
 watchdog
 Jinja2==2.10
 markdown2==2.3.5

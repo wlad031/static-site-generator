@@ -107,7 +107,7 @@ def main_watch(config_dir):
     def fun():
         main(config_dir)
         logger.info('Watching for changes...')
-    watcher.set_fun(lambda: fun())
+    watcher.set_fun(fun)
 
     watcher.add_watch(TEMPLATES_DIR)
     watcher.add_watch(config_dir)
